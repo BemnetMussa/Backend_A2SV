@@ -1,9 +1,6 @@
 package main
 
-import (
-	"fmt"
-)
-/* 
+/*
 
 Implement a REST API with the following endpoints:
 GET /tasks: Get a list of all tasks.
@@ -14,8 +11,14 @@ POST /tasks: Create a new task. This endpoint should accept a JSON body with the
 
 */
 
+import (
+	"github.com/BemnetMussa/Backend_A2SV/tree/main/Task_Managemnet_System/router"
+	"github.com/gin-gonic/gin"
+)
+
 func main() {
+	r := gin.Default()
 	
-	fmt.Print("Task manager system!")
-	
+	router.SetupRoute(r)
+	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
