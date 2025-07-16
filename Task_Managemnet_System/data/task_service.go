@@ -6,13 +6,14 @@ import (
 
 // Task DB using maps
 var TaskDB = map[int]models.Task{
-	1: {ID: 1, Title: "complete api", Detail: "for the task three it must be compelted", Done: true},
+	1: {ID: 1, Title: "complete api", Description: "for the task three it must be compelted", Completed: true},
 }
+var currentID = 2
 
 type TaskResponse struct {
 	ID    int    `json:"id"`
 	Title string `json:"title"`
-	Done  bool   `json:"done"`
+	Completed  bool   `json:"Completed"`
 }
 
 
@@ -22,7 +23,7 @@ func GetAllTasks() []TaskResponse {
 		tasks = append(tasks, TaskResponse{
 			ID: task.ID,
 			Title: task.Title,
-			Done: task.Done,
+			Completed: task.Completed,
 		})
 	}	
 	return tasks
@@ -33,6 +34,36 @@ func GetTaskDetail(taskId int) (string, bool) {
 	if !exist {
 		return "", false
 	}
+	return task.Description, exist
+}
 
-	return task.Detail, exist
+func UpdateTask(id int, newTask models.Task) (models.Task, bool) {
+	task, exists := TaskDB[id]
+	if !exists {
+		return models.Task{}, false
+	}
+
+	// Update logic
+	task.Title = newTask.Title
+	task.Description = newTask.Description
+	task.Completed = newTask.Completed
+
+	TaskDB[id] = task
+	return task, true
+}
+
+func RemoveTask(id int) bool {
+	_ , exists := TaskDB[id]
+	if !exists {
+		return false
+	}
+	delete(TaskDB, id)
+	return true
+}
+
+func CreateTask(newTask models.Task) models.Task {
+	newTask.ID = currentID
+	TaskDB[currentID] = newTask
+	currentID++
+	return newTask
 }
