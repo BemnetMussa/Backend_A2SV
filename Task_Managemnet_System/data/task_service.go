@@ -8,9 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+
 )
 
-// Reference to the collection (must be set in main.go)
 var TaskCollection *mongo.Collection
 
 // Set the MongoDB collection from main.go
