@@ -1,69 +1,105 @@
 package data
 
 import (
+	"context"
+	"time"
+
 	"github.com/BemnetMussa/Backend_A2SV/tree/main/Task_Managemnet_System/models"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// Task DB using maps
-var TaskDB = map[int]models.Task{
-	1: {ID: 1, Title: "complete api", Description: "for the task three it must be compelted", Completed: true},
-}
-var currentID = 2
+// Reference to the collection (must be set in main.go)
+var TaskCollection *mongo.Collection
 
-type TaskResponse struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
-	Completed  bool   `json:"Completed"`
+// Set the MongoDB collection from main.go
+func SetTaskCollection(c *mongo.Collection) {
+	TaskCollection = c
 }
 
 
-func GetAllTasks() []TaskResponse {
-	tasks := []TaskResponse{}
-	for _, task := range TaskDB {
-		tasks = append(tasks, TaskResponse{
-			ID: task.ID,
-			Title: task.Title,
-			Completed: task.Completed,
-		})
-	}	
-	return tasks
-}
+func CreateTask(newTask models.Task) (models.Task, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-func GetTaskDetail(taskId int) (string, bool) {
-	task, exist := TaskDB[taskId]
-	if !exist {
-		return "", false
-	}
-	return task.Description, exist
-}
-
-func UpdateTask(id int, newTask models.Task) (models.Task, bool) {
-	task, exists := TaskDB[id]
-	if !exists {
-		return models.Task{}, false
+	res, err := TaskCollection.InsertOne(ctx, newTask)
+	if err != nil {
+		return newTask, err
 	}
 
-	// Update logic
-	task.Title = newTask.Title
-	task.Description = newTask.Description
-	task.Completed = newTask.Completed
+	newTask.ID = res.InsertedID.(primitive.ObjectID)
+	return newTask, nil
+} 
 
-	TaskDB[id] = task
-	return task, true
-}
+func GetAllTasks() ([]models.Task, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-func RemoveTask(id int) bool {
-	_ , exists := TaskDB[id]
-	if !exists {
-		return false
+	cursor, err := TaskCollection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
 	}
-	delete(TaskDB, id)
-	return true
+	defer cursor.Close(ctx)
+
+	var tasks []models.Task
+	if err := cursor.All(ctx, &tasks); err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+}	
+
+func GetTaskDetail(taskId string) (models.Task, error) {
+	var task models.Task
+
+	// Convert string ID to MongoDB ObjectID
+	objID, err := primitive.ObjectIDFromHex(taskId)
+	if err != nil {
+		return task, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err = TaskCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&task)
+	if err != nil {
+		return task, err
+	}
+
+	return task, nil
 }
 
-func CreateTask(newTask models.Task) models.Task {
-	newTask.ID = currentID
-	TaskDB[currentID] = newTask
-	currentID++
-	return newTask
+
+func UpdateTask(id string, updatedData models.Task) error {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	update := bson.M{
+		"$set": bson.M{
+			"title":       updatedData.Title,
+			"description": updatedData.Description,
+			"completed":   updatedData.Completed,
+		},
+	}
+	_, err = TaskCollection.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	return err
 }
+
+
+func RemoveTask(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = TaskCollection.DeleteOne(ctx, bson.M{"_id": objID})
+	return err
+}
+
