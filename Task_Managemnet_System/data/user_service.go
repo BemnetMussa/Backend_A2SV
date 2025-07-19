@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/BemnetMussa/Backend_A2SV/tree/main/Task_Managemnet_System/models"
@@ -12,14 +13,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtSecret = []byte("your_jwt_secret")
+var jwtSecret = []byte("jwt_secrete_code_temporary") // replace --<
 var UserCollection *mongo.Collection
 
 func SetUserCollection(c *mongo.Collection) {
 	UserCollection = c
 }
 
-func RegisterUser(email string, password string, name string) error {
+func RegisterUser( name string, email string, password string) error {
 	// Check if user already exists in MongoDB
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -55,6 +56,7 @@ func RegisterUser(email string, password string, name string) error {
 		Role:     role,
 	}
 
+	fmt.Println(newUser)
 	_, err = UserCollection.InsertOne(ctx, newUser)
 	if err != nil {
 		return errors.New("failed to create user")
@@ -80,7 +82,10 @@ func LoginUser(email string, password string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.Email,
 		"email":   user.Email,
+		"role": user.Role,
 	})
+
+	
 
 	jwtToken, err := token.SignedString(jwtSecret)
 	if err != nil {

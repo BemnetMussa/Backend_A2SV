@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
 	"github.com/BemnetMussa/Backend_A2SV/tree/main/Task_Managemnet_System/data"
+	"github.com/gin-gonic/gin"
 )
 
 func RegisterUserController(c *gin.Context) {

@@ -9,7 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtSecret = []byte("jwt_secret_code") // Consider loading from env
+var jwtSecret = []byte("jwt_secrete_code_temporary") // Replace --<
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
