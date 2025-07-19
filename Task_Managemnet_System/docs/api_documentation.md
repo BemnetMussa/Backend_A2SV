@@ -1,295 +1,223 @@
-# Task Management REST API Documentation
 
-## Overview
+---
 
-This is a RESTful API for managing tasks, built using the Go programming language, Gin framework, and MongoDB for persistent storage. The API supports full CRUD operations with role-based access control:
+# 📄 Task Management REST API Documentation
 
-* *   **Admins** can create, update, and delete tasks.
-*     
-* *   **Users** can view tasks.
-*     
+## 🧾 Overview
 
-* * *
+This is a RESTful API for managing tasks, built with **Go**, the **Gin** framework, and **MongoDB** for persistent storage. It includes full CRUD functionality and **role-based access control**.
 
-## Base URL
+* 🔐 **Admins** can create, update, and delete tasks.
 
-arduino
+* 👤 **Users** can only view tasks.
 
-CopyEdit
+---
 
-`http://localhost:8080`
+## 🌐 Base URL
 
-* * *
+```
+http://localhost:8080
+```
 
-## Authentication
+---
 
-All protected endpoints require a valid JWT token in the `Authorization` header using the Bearer scheme.
+## 🔑 Authentication
 
-### Example:
+All protected endpoints require a valid **JWT token** in the `Authorization` header.
 
-makefile
+### Header Format:
 
-CopyEdit
+```
+Authorization: Bearer <your_token>
+```
 
-`Authorization: Bearer <your_jwt_token>`
+Tokens include `email` and `role` claims. Admin-only routes will reject non-admin tokens.
 
-Tokens include the user's `email` and `role` as claims.
+---
 
-* * *
+## 📚 Endpoints Summary
 
-## Endpoints Summary
+|Method|Endpoint|Description|Access|
+|---|---|---|---|
+|GET|`/tasks`|Get all tasks|User/Admin|
+|GET|`/tasks/:id`|Get task by ID|User/Admin|
+|POST|`/tasks`|Create a new task|Admin only 🔐|
+|PUT|`/tasks/:id`|Update an existing task|Admin only 🔐|
+|DELETE|`/tasks/:id`|Delete a task by ID|Admin only 🔐|
 
-Method
+---
 
-Endpoint
+## ➕ POST `/tasks`
 
-Description
+### Description
 
-Access
+Create a new task (Admin only 🔐)
 
-GET
+### Request Body
 
-`/tasks`
-
-Get all tasks
-
-User/Admin
-
-GET
-
-`/tasks/:id`
-
-Get task by ID
-
-User/Admin
-
-POST
-
-`/tasks`
-
-Create a new task
-
-Admin
-
-PUT
-
-`/tasks/:id`
-
-Update an existing task
-
-Admin
-
-DELETE
-
-`/tasks/:id`
-
-Delete a task by ID
-
-Admin
-
-* * *
-
-## POST `/tasks`
-
-Create a new task. Requires admin access.
-
-### Request Body (JSON)
-
-json
-
-CopyEdit
-
-`{   "title": "Finish project",   "description": "Implement all features",   "completed": false }`
+```json
+{
+  "title": "Finish project",
+  "description": "Implement all features",
+  "completed": false
+}
+```
 
 ### Success Response
 
-* *   **Code:** `200 OK`
-*     
+```json
+{
+  "message": "Task created successfully",
+  "task": {
+    "id": "615f7e2bc9d7a6f8c6dfc123",
+    "title": "Finish project",
+    "description": "Implement all features",
+    "completed": false
+  }
+}
+```
 
-json
+### Errors
 
-CopyEdit
+* `400 Bad Request`: Invalid input
 
-`{   "message": "Task created successfully",   "task": {     "id": "615f7e2bc9d7a6f8c6dfc123",     "title": "Finish project",     "description": "Implement all features",     "completed": false   } }`
+* `403 Forbidden`: User is not an admin
 
-### Error Response
+---
 
-* *   **Code:** `400 Bad Request`
-*     
+## 📥 GET `/tasks`
 
-json
+### Description
 
-CopyEdit
-
-`{   "error": "Invalid task data" }`
-
-* *   **Code:** `403 Forbidden` (if non-admin)
-*     
-
-json
-
-CopyEdit
-
-`{   "error": "Admin access required" }`
-
-* * *
-
-## GET `/tasks`
-
-Retrieve all tasks.
+Fetch all tasks.
 
 ### Success Response
 
-* *   **Code:** `200 OK`
-*     
+```json
+[
+  {
+    "id": "615f7e2bc9d7a6f8c6dfc123",
+    "title": "Finish project",
+    "description": "Implement all features",
+    "completed": false
+  }
+]
+```
 
-json
+---
 
-CopyEdit
+## 🔍 GET `/tasks/:id`
 
-`[   {     "id": "615f7e2bc9d7a6f8c6dfc123",     "title": "Finish project",     "description": "Implement all features",     "completed": false   } ]`
+### Description
 
-* * *
-
-## GET `/tasks/:id`
-
-Retrieve task details by ID.
-
-### Success Response
-
-* *   **Code:** `200 OK`
-*     
-
-json
-
-CopyEdit
-
-`{   "id": "615f7e2bc9d7a6f8c6dfc123",   "title": "Finish project",   "description": "Implement all features",   "completed": false }`
-
-### Error Response
-
-* *   **Code:** `404 Not Found`
-*     
-
-json
-
-CopyEdit
-
-`{   "error": "Task not found" }`
-
-* * *
-
-## PUT `/tasks/:id`
-
-Update a task by ID. Admin-only.
-
-### Request Body (JSON)
-
-json
-
-CopyEdit
-
-`{   "title": "Finalize draft",   "description": "Fix validation logic",   "completed": true }`
+Get a specific task by its ID.
 
 ### Success Response
 
-* *   **Code:** `200 OK`
-*     
+```json
+{
+  "id": "615f7e2bc9d7a6f8c6dfc123",
+  "title": "Finish project",
+  "description": "Implement all features",
+  "completed": false
+}
+```
 
-json
+### Error
 
-CopyEdit
+```json
+{
+  "error": "Task not found"
+}
+```
 
-`{   "task": {     "id": "615f7e2bc9d7a6f8c6dfc123",     "title": "Finalize draft",     "description": "Fix validation logic",     "completed": true   } }`
+---
 
-### Error Response
+## ✏️ PUT `/tasks/:id`
 
-* *   **Code:** `404 Not Found`
-*     
+### Description
 
-json
+Update a task by ID (Admin only 🔐)
 
-CopyEdit
+### Request Body
 
-`{   "error": "Task not found" }`
-
-* *   **Code:** `403 Forbidden`
-*     
-
-json
-
-CopyEdit
-
-`{   "error": "Admin access required" }`
-
-* * *
-
-## DELETE `/tasks/:id`
-
-Delete a task by ID. Admin-only.
+```json
+{
+  "title": "Finalize draft",
+  "description": "Fix validation logic",
+  "completed": true
+}
+```
 
 ### Success Response
 
-* *   **Code:** `200 OK`
-*     
+```json
+{
+  "task": {
+    "id": "615f7e2bc9d7a6f8c6dfc123",
+    "title": "Finalize draft",
+    "description": "Fix validation logic",
+    "completed": true
+  }
+}
+```
 
-json
+### Errors
 
-CopyEdit
+* `404 Not Found`: Task not found
 
-`{   "message": "Task deleted successfully" }`
+* `403 Forbidden`: Not an admin
 
-### Error Response
+---
 
-* *   **Code:** `404 Not Found`
-*     
+## ❌ DELETE `/tasks/:id`
 
-json
+### Description
 
-CopyEdit
+Delete a task by ID (Admin only 🔐)
 
-`{   "error": "Task not found" }`
+### Success Response
 
-* *   **Code:** `403 Forbidden`
-*     
+```json
+{
+  "message": "Task deleted successfully"
+}
+```
 
-json
+### Errors
 
-CopyEdit
+* `404 Not Found`: Task not found
 
-`{   "error": "Admin access required" }`
+* `403 Forbidden`: Not an admin
 
-* * *
+---
 
-## User Roles
+## 👥 Roles
 
-The system has two roles:
+There are two types of users:
 
-* *   **Admin**: Full access to all endpoints, including task creation, updating, and deletion.
-*     
-* *   **User**: Read-only access to tasks.
-*     
+* **Admin**: Full access to create, update, delete, and view tasks
 
-Role-based access is enforced using JWT token claims.
+* **User**: Read-only access (can view tasks only)
 
-* * *
+Roles are defined in the JWT token under the `role` claim.
 
-## MongoDB Integration
+---
 
-All task data is persisted in a MongoDB collection. Each task is stored with a unique ObjectID.
+## 🛢️ Database
 
-* * *
+The API uses **MongoDB** to store tasks permanently. Each task is stored as a document with a unique `ObjectID`.
 
-## Postman Testing Tips
+---
 
-* *   Set `Content-Type: application/json` for `POST` and `PUT` requests.
-*     
-* *   Include a valid JWT token in the `Authorization` header.
-*     
-* *   Ensure your MongoDB server is running locally or remotely and properly connected.
-*     
-* *   Admin operations require a token with `role: "admin"`.
-*
+## 🧪 Postman Testing Tips
 
-Copy Markdown
+* Set `Content-Type` to `application/json` for `POST` and `PUT` requests.
 
+* Include the JWT token in the `Authorization` header (`Bearer <token>`).
+
+* Test protected routes with both admin and user roles.
+
+* Make sure MongoDB is running locally or remotely and properly connected.
+
+---
