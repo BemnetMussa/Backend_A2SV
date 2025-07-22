@@ -10,7 +10,7 @@ import (
 )
 
 /*
-Task : Palindrome Check ✅
+Task : Palindrome Check ✅ak
 Write a Go function that takes a string as input and checks
 whether it is a palindrome or not.
 A palindrome is a word, phrase, number, or other sequence of characters that reads
