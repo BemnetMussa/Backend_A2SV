@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"unicode"
 )
 
@@ -16,19 +17,24 @@ a dictionary containing the frequency of each word in the string.
 [Optional]: Write test for your function ✅
 */
 
-// char frequency counter func
-func Counter(word string) map[rune]int {
-	charFrequency := map[rune]int{}
-	for _, char := range word {
-		if char == '\n' || char == '\r' {
-			continue
+// WordFrequency counts the frequency of each word in the input string
+func WordFrequency(input string) map[string]int {
+	// Remove punctuation and normalize case
+	clean := strings.Map(func(r rune) rune {
+		if unicode.IsPunct(r) {
+			return -1
 		}
-		if unicode.IsPunct(char) || unicode.IsSpace(char) {
-			continue
-		}
-		charFrequency[char] += 1
+		return unicode.ToLower(r) // case-insensitive
+	}, input)
+
+	words := strings.Fields(clean)
+
+	frequency := make(map[string]int)
+	for _, word := range words {
+		frequency[word]++
 	}
-	return charFrequency
+
+	return frequency
 }
 
 func main() {
@@ -40,8 +46,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result := Counter(input)
-	for char, value := range result {
-		fmt.Printf("'%c' : %d\n", char, value)	
+	result := WordFrequency(input)
+	for word, count := range result {
+		fmt.Printf("'%s': %d\n", word, count)
 	}
 }
