@@ -3,11 +3,19 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/BemnetMussa/Backend_A2SV/tree/main/Task_Managemnet_System/data"
+	"github.com/BemnetMussa/Backend_A2SV/Task_Managemnet_System/usecases"
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterUserController(c *gin.Context) {
+type UserController struct {
+	UserUC *usecases.UserUsecase
+}
+
+func NewUserController(userUC *usecases.UserUsecase) *UserController {
+	return &UserController{UserUC: userUC}
+}
+
+func (uc *UserController) RegisterUser(c *gin.Context) {
 	var req struct {
 		Name     string `json:"name"`
 		Email    string `json:"email"`
@@ -19,7 +27,7 @@ func RegisterUserController(c *gin.Context) {
 		return
 	}
 
-	err := data.RegisterUser(req.Name, req.Email, req.Password)
+	err := uc.UserUC.RegisterUser(req.Name, req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -28,8 +36,7 @@ func RegisterUserController(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully"})
 }
 
-
-func LoginController(c *gin.Context) {
+func (uc *UserController) Login(c *gin.Context) {
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -40,7 +47,7 @@ func LoginController(c *gin.Context) {
 		return
 	}
 
-	token, err := data.LoginUser(req.Email, req.Password)
+	token, err := uc.UserUC.LoginUser(req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
@@ -52,15 +59,14 @@ func LoginController(c *gin.Context) {
 	})
 }
 
-
-func PromoteUserController(c *gin.Context) {
+func (uc *UserController) PromoteUser(c *gin.Context) {
 	email := c.Param("email")
 	if email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required"})
 		return
 	}
 
-	err := data.PromoteUserByEmail(email)
+	err := uc.UserUC.PromoteUserByEmail(email)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
