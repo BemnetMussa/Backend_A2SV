@@ -8,20 +8,26 @@ import (
 	"github.com/BemnetMussa/Backend_A2SV/Task_Managemnet_System/domain"
 	"github.com/BemnetMussa/Backend_A2SV/Task_Managemnet_System/repositories"
 	"github.com/BemnetMussa/Backend_A2SV/Task_Managemnet_System/infrastructure"
-	"golang.org/x/crypto/bcrypt"
 )
 
+// define the usecase role 
 type UserUsecase struct {
 	Repo       repositories.UserRepository
 	JWTService *infrastructure.JWTService
+	PasswordService infrastructure.PasswordService
+}
+
+// setup the usecase to work with
+func NewUserUsecase(
+			repo repositories.UserRepository,
+			jwtService *infrastructure.JWTService, 
+			passwordService infrastructure.PasswordService) *UserUsecase {
+
+	return &UserUsecase{Repo: repo, JWTService: jwtService, PasswordService: passwordService}
 }
 
 
-func NewUserUsecase(repo repositories.UserRepository, jwtService *infrastructure.JWTService) *UserUsecase {
-	return &UserUsecase{Repo: repo, JWTService: jwtService}
-}
-
-
+// start working with it
 func (uc *UserUsecase) RegisterUser(name, email, password string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -31,7 +37,8 @@ func (uc *UserUsecase) RegisterUser(name, email, password string) error {
 		return errors.New("user already exists")
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	
+	hashedPassword, err := uc.PasswordService.HashPassword(password)
 	if err != nil {
 		return errors.New("failed to hash password")
 	}
@@ -71,7 +78,7 @@ func (uc *UserUsecase) LoginUser(email string, password string) (string, error) 
 		return "", errors.New("invalid email or password")
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+	if err := uc.PasswordService.ComparePassword(user.Password, password); err != nil {
 		return "", errors.New("invalid email or password")
 	}
 
@@ -83,7 +90,6 @@ func (uc *UserUsecase) LoginUser(email string, password string) (string, error) 
 
 	return token, nil
 }
-
 
 
 func (uc *UserUsecase) PromoteUserByEmail(email string) error {

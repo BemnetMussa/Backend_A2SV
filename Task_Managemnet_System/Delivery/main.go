@@ -17,7 +17,7 @@ import (
 
 func main() {
 	jwtService := infrastructure.NewJWTService("jwt_secrete_code_temporary", "my.app.test") // Use your actual secret key
-
+	passwordService := infrastructure.NewPasswordService()
 	// Connect to MongoDB
 	taskCollection, userCollection := connectToMongoDB()
 
@@ -27,7 +27,7 @@ func main() {
 
 	// Initialize Usecases
 	taskUsecase := usecases.NewTaskUsecase(taskRepo)
-	userUsecase := usecases.NewUserUsecase(userRepo, jwtService)
+	userUsecase := usecases.NewUserUsecase(userRepo, jwtService, passwordService)
 
 	// controllers
 	userController := controllers.NewUserController(userUsecase)
