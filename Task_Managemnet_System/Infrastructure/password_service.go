@@ -5,9 +5,9 @@ import (
 	"errors"
 )
 
-type PasswordService interface {
-	HashPassword(password string) (string, error)
-	ComparePassword(hashedPassword, password string) error
+type PasswordServiceInterface interface {
+    HashPassword(password string) (string, error)
+    ComparePassword(hashedPassword, password string) error
 }
 
 type BcryptPasswordService struct{}

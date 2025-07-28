@@ -12,12 +12,17 @@ type JWTService struct {
 	issuer    string
 }
 
+type JWTServiceInterface interface {
+    GenerateToken(userID, email, role string) (string, error)
+}
+
 func NewJWTService(secret, issuer string) *JWTService {
 	return &JWTService{
 		secretKey: secret,
 		issuer:    issuer,
 	}
 }
+
 
 // GenerateToken creates a JWT for a given user id, email, role
 func (j *JWTService) GenerateToken(userID, email, role string) (string, error) {

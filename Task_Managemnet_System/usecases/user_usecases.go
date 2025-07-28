@@ -10,22 +10,19 @@ import (
 	"github.com/BemnetMussa/Backend_A2SV/Task_Managemnet_System/infrastructure"
 )
 
-// define the usecase role 
 type UserUsecase struct {
-	Repo       repositories.UserRepository
-	JWTService *infrastructure.JWTService
-	PasswordService infrastructure.PasswordService
+    Repo           repositories.UserRepository
+    JWTService     infrastructure.JWTServiceInterface
+    PasswordService infrastructure.PasswordServiceInterface
 }
 
-// setup the usecase to work with
 func NewUserUsecase(
-			repo repositories.UserRepository,
-			jwtService *infrastructure.JWTService, 
-			passwordService infrastructure.PasswordService) *UserUsecase {
-
-	return &UserUsecase{Repo: repo, JWTService: jwtService, PasswordService: passwordService}
+    repo repositories.UserRepository,
+    jwtService infrastructure.JWTServiceInterface,
+    passwordService infrastructure.PasswordServiceInterface,
+) *UserUsecase {
+    return &UserUsecase{Repo: repo, JWTService: jwtService, PasswordService: passwordService}
 }
-
 
 // start working with it
 func (uc *UserUsecase) RegisterUser(name, email, password string) error {
